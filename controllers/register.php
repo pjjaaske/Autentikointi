@@ -1,10 +1,51 @@
 <?php
    
-    // Database connection
-    include('config/db.php');
+// Database connection
+require '../../../tunnukset.php';
+include('config/db.php');
+require 'Exception.php';
+require 'PHPMailer.php';
+require 'SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+//$to = "jukka.aula@omnia.fi";
+define('SMTPUSERNAME',$smtpUsername);
+define('SMTPPASSWORD',$smtpPassword);
+
+function posti($emailTo,$msg,$subject){
+$emailFrom = "wohjelmointi@gmail.com";
+$emailFromName = "Ohjelmointikurssi";
+$emailToName = "";
+$mail = new PHPMailer;
+$mail->isSMTP(); 
+$mail->CharSet = 'UTF-8';
+$mail->SMTPDebug = 0; // 0 = off (for production use) - 1 = client messages - 2 = client and server messages
+$mail->Host = "smtp.gmail.com"; // use $mail->Host = gethostbyname('smtp.gmail.com'); // if your network does not support SMTP over IPv6
+$mail->Port = 587; // TLS only
+$mail->SMTPSecure = 'tls'; // ssl is depracated
+$mail->SMTPAuth = true;
+$mail->Username = SMTPUSERNAME;
+$mail->Password = SMTPPASSWORD;
+$mail->setFrom($emailFrom, $emailFromName);
+$mail->addAddress($emailTo, $emailToName);
+$mail->Subject = $subject;
+$mail->msgHTML($msg); //$mail->msgHTML(file_get_contents('contents.html'), __DIR__); //Read an HTML message body from an external file, convert referenced images to embedded,
+$mail->AltBody = 'HTML messaging not supported';
+// $mail->addAttachment('images/phpmailer_mini.png'); //Attach an image file
+if(!@$mail->send()){
+    $tulos = false;
+}else{
+    $tulos = true;
+}
+return $tulos;
+}
+
+
 
     // Swiftmailer lib
-    require_once './lib/vendor/autoload.php';
+    //require_once './lib/vendor/autoload.php';
     
     // Error & success messages
     global $success_msg, $email_exist, $f_NameErr, $l_NameErr, $_emailErr, $_mobileErr, $_passwordErr;
@@ -99,24 +140,8 @@
                         $msg = 'Click on the activation link to verify your email. <br><br>
                           <a href="http://localhost:8888/php-user-authentication/user_verificaiton.php?token='.$token.'"> Click here to verify email</a>
                         ';
-
-                        // Create the Transport
-                        $transport = (new Swift_SmtpTransport('smtp.gmail.com', 465, 'ssl'))
-                        ->setUsername('your_email@gmail.com')
-                        ->setPassword('your_email_password');
-
-                        // Create the Mailer using your created Transport
-                        $mailer = new Swift_Mailer($transport);
-
-                        // Create a message
-                        $message = (new Swift_Message('Please Verify Email Address!'))
-                        ->setFrom([$email => $firstname . ' ' . $lastname])
-                        ->setTo($email)
-                        ->addPart($msg, "text/html")
-                        ->setBody('Hello! User');
-
-                        // Send the message
-                        $result = $mailer->send($message);
+                        $subject = "Please Verify Email Address!";
+                        $result = posti($email,$msg,$subject);
                           
                         if(!$result){
                             $email_verify_err = '<div class="alert alert-danger">
