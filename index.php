@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en">
+<!-- <html lang="en">  MG changed this  -->
+<html lang="fi">
 
 <head>
     <meta charset="utf-8">
